@@ -47,7 +47,7 @@
       <a href="/zh-cn/" id="logo">LiquidJS</a>
     </h1>
     <nav id="main-nav">
-      <a href="../../tutorials/setup.html" class="main-nav-link">教程</a><a href="../../tags/overview.html" class="main-nav-link">标签</a><a href="../../filters/overview.html" class="main-nav-link">过滤器</a><a href="../../playground.html" class="main-nav-link">演示</a><a href="liquid_.liquid.html" class="main-nav-link">API</a>
+      <a href="../../tutorials/intro-to-liquid.html" class="main-nav-link">教程</a><a href="../../tags/overview.html" class="main-nav-link">标签</a><a href="../../filters/overview.html" class="main-nav-link">过滤器</a><a href="../../playground.html" class="main-nav-link">演示</a><a href="liquid_.liquid.html" class="main-nav-link">API</a>
       <div id="search-input-wrap">
         <i id="search-input-icon" class="icon-search"></i>
         <input type="search" id="search-input" placeholder="搜索...">
@@ -101,7 +101,7 @@
 </ul>
 <h2 id="Constructors" class="article-heading"><a href="#Constructors" class="headerlink" title="Constructors"></a>Constructors<a class="article-anchor" href="#Constructors" aria-hidden="true"></a></h2><h3 id="constructor-NaN" class="article-heading"><a href="#constructor-NaN" class="headerlink" title="constructor"></a>constructor<a class="article-anchor" href="#constructor-NaN" aria-hidden="true"></a></h3><p>+ <strong>new Tag</strong>(<code>token</code>: <a href="tokens_tag_token_.tagtoken.html">TagToken</a>, <code>tokens</code>: <a href="../modules/tokens_toplevel_token_.html#topleveltoken">TopLevelToken</a>[], <code>liquid</code>: <a href="liquid_.liquid.html">Liquid</a>): <em><a href="template_tag_tag_.tag.html">Tag</a></em></p>
 <p><em>Overrides <a href="template_template_impl_.templateimpl.html">TemplateImpl</a>.<a href="template_template_impl_.templateimpl.html#constructor">constructor</a></em></p>
-<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/blob/master/src/template/tag/tag.ts#L10">src/template/tag/tag.ts:10</a></em></p>
+<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jg-rp/liquidjs/blob/master/src/template/tag/tag.ts#L10">src/template/tag/tag.ts:10</a></em></p>
 <p><strong>Parameters:</strong></p>
 <table>
 <thead>
@@ -125,18 +125,18 @@
 </tbody></table>
 <p><strong>Returns:</strong> <em><a href="template_tag_tag_.tag.html">Tag</a></em></p>
 <h2 id="Properties" class="article-heading"><a href="#Properties" class="headerlink" title="Properties"></a>Properties<a class="article-anchor" href="#Properties" aria-hidden="true"></a></h2><h3 id="Private-impl" class="article-heading"><a href="#Private-impl" class="headerlink" title="Private impl"></a><code>Private</code> impl<a class="article-anchor" href="#Private-impl" aria-hidden="true"></a></h3><p>• <strong>impl</strong>: <em><a href="../interfaces/template_tag_tag_impl_.tagimpl.html">TagImpl</a></em></p>
-<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/blob/master/src/template/tag/tag.ts#L10">src/template/tag/tag.ts:10</a></em></p>
+<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jg-rp/liquidjs/blob/master/src/template/tag/tag.ts#L10">src/template/tag/tag.ts:10</a></em></p>
 <hr>
 <h3 id="name" class="article-heading"><a href="#name" class="headerlink" title="name"></a>name<a class="article-anchor" href="#name" aria-hidden="true"></a></h3><p>• <strong>name</strong>: <em>string</em></p>
-<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/blob/master/src/template/tag/tag.ts#L9">src/template/tag/tag.ts:9</a></em></p>
+<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jg-rp/liquidjs/blob/master/src/template/tag/tag.ts#L9">src/template/tag/tag.ts:9</a></em></p>
 <hr>
 <h3 id="token" class="article-heading"><a href="#token" class="headerlink" title="token"></a>token<a class="article-anchor" href="#token" aria-hidden="true"></a></h3><p>• <strong>token</strong>: <em><a href="tokens_tag_token_.tagtoken.html">TagToken</a></em></p>
 <p><em>Implementation of <a href="../interfaces/template_template_.template.html">Template</a>.<a href="../interfaces/template_template_.template.html#token">token</a></em></p>
 <p><em>Inherited from <a href="template_template_impl_.templateimpl.html">TemplateImpl</a>.<a href="template_template_impl_.templateimpl.html#token">token</a></em></p>
-<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/blob/master/src/template/template-impl.ts#L2">src/template/template-impl.ts:2</a></em></p>
+<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jg-rp/liquidjs/blob/master/src/template/template-impl.ts#L2">src/template/template-impl.ts:2</a></em></p>
 <h2 id="Methods" class="article-heading"><a href="#Methods" class="headerlink" title="Methods"></a>Methods<a class="article-anchor" href="#Methods" aria-hidden="true"></a></h2><h3 id="render" class="article-heading"><a href="#render" class="headerlink" title="render"></a>render<a class="article-anchor" href="#render" aria-hidden="true"></a></h3><p>▸ <strong>render</strong>(<code>ctx</code>: <a href="context_context_.context.html">Context</a>, <code>emitter</code>: <a href="../interfaces/emitters_emitter_.emitter.html">Emitter</a>): <em>Generator‹unknown, unknown, <a href="../interfaces/template_tag_hash_.hashvalue.html">HashValue</a> | unknown›</em></p>
 <p><em>Implementation of <a href="../interfaces/template_template_.template.html">Template</a></em></p>
-<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/blob/master/src/template/tag/tag.ts#L24">src/template/tag/tag.ts:24</a></em></p>
+<p><em>Defined in <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jg-rp/liquidjs/blob/master/src/template/tag/tag.ts#L24">src/template/tag/tag.ts:24</a></em></p>
 <p><strong>Parameters:</strong></p>
 <table>
 <thead>
@@ -158,7 +158,7 @@
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2021-12-18T07:30:44.257Z" itemprop="dateModified">上次更新：2021-12-18</time>
+                <time class="article-footer-updated" datetime="2022-01-27T17:39:31.668Z" itemprop="dateModified">上次更新：2022-01-27</time>
                 <a href="../classes/liquid_.liquid.html" class="article-footer-next" title="sidebar.api.Liquid"><span>下一页</span><i class="icon-chevron-right"></i></a>
               </footer>
             </div>
@@ -181,7 +181,7 @@
     <footer id="footer" class="wrapper">
   <div class="inner">
     <div id="footer-copyright">
-      &copy; 2021 <a href="https://github.com/harttle/liquidjs/graphs/contributors" rel="external nofollow noreferrer" target="_blank">Harttle</a><br>
+      &copy; 2022 <a href="https://github.com/harttle/liquidjs/graphs/contributors" rel="external nofollow noreferrer" target="_blank">Harttle</a><br>
       本文档通过 <a href="http://creativecommons.org/licenses/by/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a> 授权。
     </div>
     <div id="footer-links">
@@ -198,7 +198,7 @@
   <nav id="mobile-nav">
   <div id="mobile-nav-inner">
     <ul id="mobile-nav-list">
-      <a href="../../tutorials/setup.html" class="mobile-nav-link">教程</a><a href="../../tags/overview.html" class="mobile-nav-link">标签</a><a href="../../filters/overview.html" class="mobile-nav-link">过滤器</a><a href="../../playground.html" class="mobile-nav-link">演示</a><a href="liquid_.liquid.html" class="mobile-nav-link">API</a>
+      <a href="../../tutorials/intro-to-liquid.html" class="mobile-nav-link">教程</a><a href="../../tags/overview.html" class="mobile-nav-link">标签</a><a href="../../filters/overview.html" class="mobile-nav-link">过滤器</a><a href="../../playground.html" class="mobile-nav-link">演示</a><a href="liquid_.liquid.html" class="mobile-nav-link">API</a>
       <li class="mobile-nav-item">
         <a href="https://github.com/harttle/liquidjs" class="mobile-nav-link" rel="external" target="_blank">GitHub</a>
       </li>
