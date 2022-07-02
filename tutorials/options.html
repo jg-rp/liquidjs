@@ -54,8 +54,8 @@
         <input type="search" id="search-input" placeholder="Search...">
       </div>
     </nav>
-    <div id="lang-select-wrap" class="main-nav-link">
-      <label><i class="icon-network"></i>English</label>
+    <div class="main-nav-link icon-nav-link">
+      <label><i class="icon-network"></i> <span class="icon-nav-title">English</span></label>
       <select id="lang-select" data-canonical="tutorials/options.html">
         
           <option value="en" selected>English</option>
@@ -64,7 +64,8 @@
         
       </select>
     </div>
-    <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs" id="github-link-wrap" class="main-nav-link"><i class="icon-github"></i>Github</a>
+    <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs" class="main-nav-link icon-nav-link"><i class="icon-github"></i> <span class="icon-nav-title">Github</span></a>
+    <a target="_blank" rel="noopener external nofollow noreferrer" href="https://opencollective.com/liquidjs" class="main-nav-link icon-nav-link"><i class="icon-opencollective"></i> <span class="icon-nav-title">Support</span></a>
     <a id="mobile-nav-toggle">
       <span class="mobile-nav-toggle-bar"></span>
       <span class="mobile-nav-toggle-bar"></span>
@@ -95,7 +96,7 @@
                 <p>The <a href="../api/classes/liquid_.liquid.html">Liquid</a> constructor accepts a plain object as options to define the behavior of LiquidJS. All of these options are optional thus we can specify any of them, for example the <code>cache</code> option:</p>
 <pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">const</span> <span class="token punctuation">&#123;</span> Liquid <span class="token punctuation">&#125;</span> <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'liquidjs'</span><span class="token punctuation">)</span>
 <span class="token keyword">const</span> engine <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Liquid</span><span class="token punctuation">(</span><span class="token punctuation">&#123;</span>
-    cache<span class="token operator">:</span> <span class="token boolean">true</span>
+    <span class="token literal-property property">cache</span><span class="token operator">:</span> <span class="token boolean">true</span>
 <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
 
 <blockquote class="note info"><strong class="note-title">API Document</strong><p>Following is an overview for all the options, for exact types and signatures please refer to <a href="https://liquidjs.com/api/interfaces/liquid_options_.liquidoptions.html" target="_self">LiquidOptions | API</a>.</p>
@@ -166,7 +167,7 @@
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2022-02-06T08:09:04.607Z" itemprop="dateModified">Last updated: 2022-02-06</time>
+                <time class="article-footer-updated" datetime="2022-07-02T06:25:46.814Z" itemprop="dateModified">Last updated: 2022-07-02</time>
                 <a href="setup.html" class="article-footer-prev" title="Setup"><i class="icon-chevron-left"></i><span>Prev</span></a><a href="render-file.html" class="article-footer-next" title="Render Files"><span>Next</span><i class="icon-chevron-right"></i></a>
               </footer>
             </div>
@@ -207,9 +208,6 @@
   <div id="mobile-nav-inner">
     <ul id="mobile-nav-list">
       <a href="../tutorials/intro-to-liquid.html" class="mobile-nav-link">Tutorials</a><a href="../tags/overview.html" class="mobile-nav-link">Tags</a><a href="../filters/overview.html" class="mobile-nav-link">Filters</a><a href="../playground.html" class="mobile-nav-link">Playground</a><a href="../api/classes/liquid_.liquid.html" class="mobile-nav-link">API</a>
-      <li class="mobile-nav-item">
-        <a href="https://github.com/harttle/liquidjs" class="mobile-nav-link" rel="external" target="_blank">GitHub</a>
-      </li>
     </ul>
     
     <div class="mobile-sidebar-list">
@@ -217,15 +215,19 @@
     </div>
     
   </div>
-  <div id="mobile-lang-select-wrap">
-    <span id="mobile-lang-select-label"><i class="icon-network"></i><span>English</span></span>
-    <select id="mobile-lang-select" data-canonical="tutorials/options.html">
-      
-        <option value="en" selected>English</option>
-      
-        <option value="zh-cn">简体中文</option>
-      
-    </select>
+  <div id="mobile-button-list">
+    <a href="https://github.com/harttle/liquidjs" class="mobile-nav-link" rel="external" target="_blank"><i class="icon-github"></i></a>
+    <a href="https://opencollective.com/liquidjs" class="mobile-nav-link" rel="external" target="_blank"><i class="icon-opencollective"></i></a>
+    <div id="mobile-lang-select-wrap" class="mobile-nav-link">
+      <label for="mobile-lang-select"><i class="icon-network"></i></label>
+      <select id="mobile-lang-select" data-canonical="tutorials/options.html">
+        
+          <option value="en" selected>English</option>
+        
+          <option value="zh-cn">简体中文</option>
+        
+      </select>
+    </div>
   </div>
 </nav>
   
