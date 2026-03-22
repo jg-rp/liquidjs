@@ -146,18 +146,16 @@ export function replace_first (this: FilterImpl, v: string, arg1: string, arg2: 
   arg1 = stringify(arg1)
   arg2 = stringify(arg2)
   this.context.memoryLimit.use(str.length + arg1.length + arg2.length)
-  return str.replace(arg1, arg2)
+  return str.replace(arg1, () => arg2)
 }
 
 export function replace_last (this: FilterImpl, v: string, arg1: string, arg2: string) {
   const str = stringify(v)
-  this.context.memoryLimit.use(str.length)
   const pattern = stringify(arg1)
-  this.context.memoryLimit.use(pattern.length)
+  const replacement = stringify(arg2)
+  this.context.memoryLimit.use(str.length + pattern.length + replacement.length)
   const index = str.lastIndexOf(pattern)
   if (index === -1) return str
-  const replacement = stringify(arg2)
-  this.context.memoryLimit.use(replacement.length)
   return str.substring(0, index) + replacement + str.substring(index + pattern.length)
 }
 
