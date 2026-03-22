@@ -1,3 +1,11 @@
+## [10.25.1](https://github.com/harttle/liquidjs/compare/v10.25.0...v10.25.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* mem limiter for invalid ranges ([95ddefc](https://github.com/harttle/liquidjs/commit/95ddefc056a11a44d9e753fd47a39db2c241e578))
+* treat args for replace_first as literal ([35d5230](https://github.com/harttle/liquidjs/commit/35d523026345d80458df24c72e653db78b5d061d))
+
 # [10.25.0](https://github.com/harttle/liquidjs/compare/v10.24.0...v10.25.0) (2026-03-07)
 
 
