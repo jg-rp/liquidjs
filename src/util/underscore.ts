@@ -22,10 +22,6 @@ export function isIterator (val: any): val is IterableIterator<any> {
   return val && isFunction(val.next) && isFunction(val.throw) && isFunction(val.return)
 }
 
-export function escapeRegex (str: string) {
-  return str.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
-}
-
 export function promisify<T1, T2> (fn: (arg1: T1, cb: (err: Error | null, result: T2) => void) => void): (arg1: T1) => Promise<T2>;
 export function promisify<T1, T2, T3> (fn: (arg1: T1, arg2: T2, cb: (err: Error | null, result: T3) => void) => void): (arg1: T1, arg2: T2) => Promise<T3>;
 export function promisify (fn: any) {

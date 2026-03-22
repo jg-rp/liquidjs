@@ -1,5 +1,5 @@
 import { FS } from './fs'
-import { assert, escapeRegex } from '../util'
+import { assert } from '../util'
 
 export interface LoaderOptions {
   fs: FS;
@@ -24,8 +24,8 @@ export class Loader {
     if (options.relativeReference) {
       const sep = options.fs.sep
       assert(sep, '`fs.sep` is required for relative reference')
-      const rRelativePath = new RegExp(['.' + sep, '..' + sep, './', '../'].map(prefix => escapeRegex(prefix)).join('|'))
-      this.shouldLoadRelative = (referencedFile: string) => rRelativePath.test(referencedFile)
+      const prefixes = ['.' + sep, '..' + sep, './', '../']
+      this.shouldLoadRelative = (referencedFile: string) => prefixes.some(prefix => referencedFile.startsWith(prefix))
     } else {
       this.shouldLoadRelative = (_referencedFile: string) => false
     }
