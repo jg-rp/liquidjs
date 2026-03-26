@@ -138,8 +138,10 @@ export function replace (this: FilterImpl, v: string, pattern: string, replaceme
   const str = stringify(v)
   pattern = stringify(pattern)
   replacement = stringify(replacement)
-  this.context.memoryLimit.use(str.length + pattern.length + replacement.length)
-  return str.split(pattern).join(replacement)
+  const parts = str.split(pattern)
+  const outputSize = str.length + (parts.length - 1) * (replacement.length - pattern.length)
+  this.context.memoryLimit.use(outputSize)
+  return parts.join(replacement)
 }
 
 export function replace_first (this: FilterImpl, v: string, arg1: string, arg2: string) {
