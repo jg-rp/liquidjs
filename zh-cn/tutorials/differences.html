@@ -78,7 +78,7 @@
     <div id="content-inner">
       <aside id="sidebar" role="navigation">
   <div class="inner">
-    <strong class="sidebar-title">开始使用</strong><a href="intro-to-liquid.html" class="sidebar-link">Liquid 简介</a><a href="setup.html" class="sidebar-link">安装</a><a href="options.html" class="sidebar-link">选项</a><a href="render-file.html" class="sidebar-link">文件渲染</a><a href="partials-and-layouts.html" class="sidebar-link">引用/继承</a><a href="use-in-expressjs.html" class="sidebar-link">Express.js 中使用</a><strong class="sidebar-title">高级主题</strong><a href="caching.html" class="sidebar-link">缓存</a><a href="escaping.html" class="sidebar-link">转义</a><a href="register-filters-tags.html" class="sidebar-link">注册标签/过滤器</a><a href="access-scope-in-filters.html" class="sidebar-link">过滤器里访问上下文</a><a href="parse-parameters.html" class="sidebar-link">参数解析</a><a href="render-tag-content.html" class="sidebar-link">渲染标签内容</a><a href="drops.html" class="sidebar-link">Liquid Drop</a><a href="sync-and-async.html" class="sidebar-link">同步和异步</a><a href="whitespace-control.html" class="sidebar-link">换行和缩进</a><a href="plugins.html" class="sidebar-link">插件</a><a href="operators.html" class="sidebar-link">运算符</a><a href="truthy-and-falsy.html" class="sidebar-link">真和假</a><a href="dos.html" class="sidebar-link">DoS</a><strong class="sidebar-title">其他</strong><a href="migrate-to-9.html" class="sidebar-link">迁移到 LiquidJS 9</a><a href="changelog.html" class="sidebar-link">更新日志</a><a href="differences.html" class="sidebar-link current">与 Shopify/liquid 的不同</a><a href="contribution-guidelines.html" class="sidebar-link">贡献指南</a>
+    <strong class="sidebar-title">开始使用</strong><a href="intro-to-liquid.html" class="sidebar-link">Liquid 简介</a><a href="setup.html" class="sidebar-link">安装</a><a href="options.html" class="sidebar-link">选项</a><a href="render-file.html" class="sidebar-link">文件渲染</a><a href="partials-and-layouts.html" class="sidebar-link">引用/继承</a><a href="use-in-expressjs.html" class="sidebar-link">Express.js 中使用</a><strong class="sidebar-title">高级主题</strong><a href="caching.html" class="sidebar-link">缓存</a><a href="escaping.html" class="sidebar-link">转义</a><a href="register-filters-tags.html" class="sidebar-link">注册标签/过滤器</a><a href="access-scope-in-filters.html" class="sidebar-link">过滤器里访问上下文</a><a href="parse-parameters.html" class="sidebar-link">参数解析</a><a href="render-tag-content.html" class="sidebar-link">渲染标签内容</a><a href="drops.html" class="sidebar-link">Liquid Drop</a><a href="sync-and-async.html" class="sidebar-link">同步和异步</a><a href="whitespace-control.html" class="sidebar-link">换行和缩进</a><a href="plugins.html" class="sidebar-link">插件</a><a href="operators.html" class="sidebar-link">运算符</a><a href="truthy-and-falsy.html" class="sidebar-link">真和假</a><a href="dos.html" class="sidebar-link">DoS</a><a href="static-analysis.html" class="sidebar-link">静态分析</a><strong class="sidebar-title">其他</strong><a href="migrate-to-9.html" class="sidebar-link">迁移到 LiquidJS 9</a><a href="changelog.html" class="sidebar-link">更新日志</a><a href="differences.html" class="sidebar-link current">与 Shopify/liquid 的不同</a><a href="contribution-guidelines.html" class="sidebar-link">贡献指南</a>
   </div>
 </aside>
       <article class="article-container" itemscope itemtype="https://schema.org/Article">
@@ -109,6 +109,7 @@
 <ul>
 <li>真和假。在 LiquidJS 中 <code>undefined</code>, <code>null</code>, <code>false</code> 是假，之外的都是真；在 Ruby 中 <code>nil</code> 和 <code>false</code> 是假，其他都是真。见 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/pull/26">#26</a>。</li>
 <li>数字。JavaScript 不区分浮点数和整数，因此缺失一部分整数算术，见 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/issues/59">#59</a>。此外 <code>size</code> 过滤器作用于数字时总是返回零，而不是 Ruby 中的浮点数或整数的内存大小。</li>
+<li>输出字符串。基本类型的输出已经和 Shopify/liquid 对齐，但是仍然存在一些区别。比如在 Shopify/liquid 中 <code>strip</code> 会返回 inspect 字符串，但 LiquidJS <code>strip</code> 只是简单地把输入转换为字符串 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/harttle/liquidjs/discussions/852">#852</a>。</li>
 <li>Drop 中的 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/Shopify/liquid/wiki/Introduction-to-Drops">.to_liquid()</a> 替换为 <code>.toLiquid()</code>。</li>
 <li>数据的 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.rubydoc.info/gems/liquid/Liquid/Drop">.to_s()</a> 替换为 <code>.toString()</code>。</li>
 <li>对象的迭代顺序。JavaScript 对象的迭代顺序是插入顺序和数字键递增顺序的组合，但 Ruby Hash 中只是插入顺序（JavaScript 字面量 Object 和 Ruby 字面量 Hash 的插入顺序解释也不同）。</li>
@@ -126,7 +127,7 @@
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2024-11-16T09:56:53.493Z" itemprop="dateModified">上次更新：2024-11-16</time>
+                <time class="article-footer-updated" datetime="2026-04-03T19:26:43.894Z" itemprop="dateModified">上次更新：2026-04-03</time>
                 <a href="changelog.html" class="article-footer-prev" title="更新日志"><i class="icon-chevron-left"></i><span>上一页</span></a><a href="contribution-guidelines.html" class="article-footer-next" title="贡献指南"><span>下一页</span><i class="icon-chevron-right"></i></a>
               </footer>
             </div>
@@ -149,7 +150,7 @@
     <footer id="footer" class="wrapper">
   <div class="inner">
     <div id="footer-copyright">
-      &copy; 2024 <a href="https://github.com/harttle/liquidjs/graphs/contributors" rel="external nofollow noreferrer" target="_blank">Harttle</a><br>
+      &copy; 2026 <a href="https://github.com/harttle/liquidjs/graphs/contributors" rel="external nofollow noreferrer" target="_blank">Harttle</a><br>
       本文档通过 <a href="http://creativecommons.org/licenses/by/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY 4.0</a> 授权。
     </div>
     <div id="footer-links">
@@ -169,7 +170,7 @@
     </ul>
     
     <div class="mobile-sidebar-list">
-      <strong class="mobile-nav-title">开始使用</strong><a href="intro-to-liquid.html" class="mobile-nav-link">Liquid 简介</a><a href="setup.html" class="mobile-nav-link">安装</a><a href="options.html" class="mobile-nav-link">选项</a><a href="render-file.html" class="mobile-nav-link">文件渲染</a><a href="partials-and-layouts.html" class="mobile-nav-link">引用/继承</a><a href="use-in-expressjs.html" class="mobile-nav-link">Express.js 中使用</a><strong class="mobile-nav-title">高级主题</strong><a href="caching.html" class="mobile-nav-link">缓存</a><a href="escaping.html" class="mobile-nav-link">转义</a><a href="register-filters-tags.html" class="mobile-nav-link">注册标签/过滤器</a><a href="access-scope-in-filters.html" class="mobile-nav-link">过滤器里访问上下文</a><a href="parse-parameters.html" class="mobile-nav-link">参数解析</a><a href="render-tag-content.html" class="mobile-nav-link">渲染标签内容</a><a href="drops.html" class="mobile-nav-link">Liquid Drop</a><a href="sync-and-async.html" class="mobile-nav-link">同步和异步</a><a href="whitespace-control.html" class="mobile-nav-link">换行和缩进</a><a href="plugins.html" class="mobile-nav-link">插件</a><a href="operators.html" class="mobile-nav-link">运算符</a><a href="truthy-and-falsy.html" class="mobile-nav-link">真和假</a><a href="dos.html" class="mobile-nav-link">DoS</a><strong class="mobile-nav-title">其他</strong><a href="migrate-to-9.html" class="mobile-nav-link">迁移到 LiquidJS 9</a><a href="changelog.html" class="mobile-nav-link">更新日志</a><a href="differences.html" class="mobile-nav-link current">与 Shopify/liquid 的不同</a><a href="contribution-guidelines.html" class="mobile-nav-link">贡献指南</a>
+      <strong class="mobile-nav-title">开始使用</strong><a href="intro-to-liquid.html" class="mobile-nav-link">Liquid 简介</a><a href="setup.html" class="mobile-nav-link">安装</a><a href="options.html" class="mobile-nav-link">选项</a><a href="render-file.html" class="mobile-nav-link">文件渲染</a><a href="partials-and-layouts.html" class="mobile-nav-link">引用/继承</a><a href="use-in-expressjs.html" class="mobile-nav-link">Express.js 中使用</a><strong class="mobile-nav-title">高级主题</strong><a href="caching.html" class="mobile-nav-link">缓存</a><a href="escaping.html" class="mobile-nav-link">转义</a><a href="register-filters-tags.html" class="mobile-nav-link">注册标签/过滤器</a><a href="access-scope-in-filters.html" class="mobile-nav-link">过滤器里访问上下文</a><a href="parse-parameters.html" class="mobile-nav-link">参数解析</a><a href="render-tag-content.html" class="mobile-nav-link">渲染标签内容</a><a href="drops.html" class="mobile-nav-link">Liquid Drop</a><a href="sync-and-async.html" class="mobile-nav-link">同步和异步</a><a href="whitespace-control.html" class="mobile-nav-link">换行和缩进</a><a href="plugins.html" class="mobile-nav-link">插件</a><a href="operators.html" class="mobile-nav-link">运算符</a><a href="truthy-and-falsy.html" class="mobile-nav-link">真和假</a><a href="dos.html" class="mobile-nav-link">DoS</a><a href="static-analysis.html" class="mobile-nav-link">静态分析</a><strong class="mobile-nav-title">其他</strong><a href="migrate-to-9.html" class="mobile-nav-link">迁移到 LiquidJS 9</a><a href="changelog.html" class="mobile-nav-link">更新日志</a><a href="differences.html" class="mobile-nav-link current">与 Shopify/liquid 的不同</a><a href="contribution-guidelines.html" class="mobile-nav-link">贡献指南</a>
     </div>
     
   </div>
@@ -198,7 +199,8 @@
 <script>
 document.getElementById('search-input-wrap').classList.add('on');
 docsearch({
-apiKey: '01f36cc168657a26a385308b9e721bc6',
+appId: 'QJ35YOZTU4',
+apiKey: '8c6cbb824b4c5023f0bb2ef29e228bef',
 indexName: 'liquidjs',
 inputSelector: '#search-input',
 debug: false
