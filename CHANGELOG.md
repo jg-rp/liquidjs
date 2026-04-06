@@ -1,3 +1,11 @@
+## [10.25.3](https://github.com/harttle/liquidjs/compare/v10.25.2...v10.25.3) (2026-04-06)
+
+
+### Bug Fixes
+
+* precise memoryLimit for string replace ([abc058b](https://github.com/harttle/liquidjs/commit/abc058be0f33d6372cd2216f4945183167abeb25))
+* use realpath for fs.contains ([#867](https://github.com/harttle/liquidjs/issues/867)) ([529dd67](https://github.com/harttle/liquidjs/commit/529dd67eeb6b125637623d6a723601f0938d3613))
+
 ## [10.25.2](https://github.com/harttle/liquidjs/compare/v10.25.1...v10.25.2) (2026-03-25)
 
 
