@@ -1,3 +1,10 @@
+## [10.25.4](https://github.com/harttle/liquidjs/compare/v10.25.3...v10.25.4) (2026-04-07)
+
+
+### Bug Fixes
+
+* sort and sort_natural filters bypass ownPropertyOnly ([#869](https://github.com/harttle/liquidjs/issues/869)) ([e743da0](https://github.com/harttle/liquidjs/commit/e743da0020d34e2ee547e1cc1a86b58377ebe1ce))
+
 ## [10.25.3](https://github.com/harttle/liquidjs/compare/v10.25.2...v10.25.3) (2026-04-06)
 
 
