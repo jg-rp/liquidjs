@@ -2,6 +2,7 @@ import { evalToken } from '../render/expression'
 import { Context } from '../context/context'
 import { Tokenizer } from '../parser/tokenizer'
 import { Token } from '../tokens/token'
+import { Liquid } from '../liquid'
 
 type HashValueTokens = Record<string, Token | undefined>
 
@@ -16,8 +17,8 @@ type HashValueTokens = Record<string, Token | undefined>
 export class Hash {
   hash: HashValueTokens = {}
 
-  constructor (input: string | Tokenizer, jekyllStyle?: boolean | string) {
-    const tokenizer = input instanceof Tokenizer ? input : new Tokenizer(input, {})
+  constructor (input: string | Tokenizer, liquid: Liquid, jekyllStyle?: boolean | string) {
+    const tokenizer = input instanceof Tokenizer ? input : new Tokenizer(input, liquid, {})
     for (const hash of tokenizer.readHashes(jekyllStyle)) {
       this.hash[hash.name.content] = hash.value
     }

@@ -1,6 +1,7 @@
 import { DelimitedToken } from './delimited-token'
 import { Tokenizer, TokenKind } from '../parser'
 import type { NormalizedFullOptions } from '../liquid-options'
+import { Liquid } from '../liquid'
 
 export class TagToken extends DelimitedToken {
   public name: string
@@ -11,13 +12,14 @@ export class TagToken extends DelimitedToken {
     begin: number,
     end: number,
     options: NormalizedFullOptions,
+    liquid: Liquid,
     file?: string
   ) {
     const { trimTagLeft, trimTagRight, tagDelimiterLeft, tagDelimiterRight } = options
     const [valueBegin, valueEnd] = [begin + tagDelimiterLeft.length, end - tagDelimiterRight.length]
     super(TokenKind.Tag, [valueBegin, valueEnd], input, begin, end, trimTagLeft, trimTagRight, file)
 
-    this.tokenizer = new Tokenizer(input, options.operators, file, this.contentRange)
+    this.tokenizer = new Tokenizer(input, liquid, options.operators, file, this.contentRange)
     this.name = this.tokenizer.readTagName()
     this.tokenizer.assert(this.name, `illegal tag syntax, tag name expected`)
     this.tokenizer.skipBlank()

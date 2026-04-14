@@ -1,5 +1,5 @@
-import { QuotedToken, RangeToken, OperatorToken, Token, PropertyAccessToken, OperatorType, operatorTypes } from '../tokens'
-import { isRangeToken, isPropertyAccessToken, UndefinedVariableError, range, isOperatorToken, assert } from '../util'
+import { QuotedToken, RangeToken, OperatorToken, Token, PropertyAccessToken, OperatorType, operatorTypes, FilteredValueToken } from '../tokens'
+import { isRangeToken, isPropertyAccessToken, UndefinedVariableError, range, isOperatorToken, assert, isFilteredValueToken } from '../util'
 import type { Context } from '../context'
 import type { UnaryOperatorHandler } from '../render'
 import { Drop } from '../drop'
@@ -40,6 +40,7 @@ export function * evalToken (token: Token | undefined, ctx: Context, lenient = f
   if ('content' in token) return token.content
   if (isPropertyAccessToken(token)) return yield evalPropertyAccessToken(token, ctx, lenient)
   if (isRangeToken(token)) return yield evalRangeToken(token, ctx)
+  if (isFilteredValueToken(token)) return yield evalFilteredValueToken(token, ctx, lenient)
 }
 
 function * evalPropertyAccessToken (token: PropertyAccessToken, ctx: Context, lenient: boolean): IterableIterator<unknown> {
@@ -84,4 +85,14 @@ function * toPostfix (tokens: IterableIterator<Token>): IterableIterator<Token> 
   while (ops.length) {
     yield ops.pop()!
   }
+}
+
+function * evalFilteredValueToken (token: FilteredValueToken, ctx: Context, lenient: boolean): IterableIterator<unknown> {
+  lenient = lenient || (ctx.opts.lenientIf && token.filters.length > 0 && token.filters[0].name === 'default')
+  let val = yield token.initial.evaluate(ctx, lenient)
+
+  for (const filter of token.filters) {
+    val = yield filter.render(val, ctx)
+  }
+  return val
 }

@@ -6,7 +6,7 @@ class MockTag extends Tag {
 
   constructor (token: TagToken, remainTokens: TopLevelToken[], liquid: Liquid, parser: Parser) {
     super(token, remainTokens, liquid)
-    this.args = new Hash(token.tokenizer)
+    this.args = new Hash(token.tokenizer, liquid)
     this.templates = []
 
     const stream: ParseStream = parser.parseStream(remainTokens)

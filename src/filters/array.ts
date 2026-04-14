@@ -125,7 +125,7 @@ function * filter<T extends object> (this: FilterImpl, include: boolean, arr: T[
   const values: unknown[] = []
   arr = toArray(arr)
   this.context.memoryLimit.use(arr.length)
-  const token = new Tokenizer(stringify(property)).readScopeValue()
+  const token = new Tokenizer(stringify(property), this.liquid).readScopeValue()
   for (const item of arr) {
     values.push(yield evalToken(token, this.context.spawn(item)))
   }
@@ -166,7 +166,7 @@ export function * reject_exp<T extends object> (this: FilterImpl, arr: T[], item
 export function * group_by<T extends object> (this: FilterImpl, arr: T[], property: string): IterableIterator<unknown> {
   const map = new Map()
   arr = toEnumerable(arr)
-  const token = new Tokenizer(stringify(property)).readScopeValue()
+  const token = new Tokenizer(stringify(property), this.liquid).readScopeValue()
   this.context.memoryLimit.use(arr.length)
   for (const item of arr) {
     const key = yield evalToken(token, this.context.spawn(item))
@@ -192,7 +192,7 @@ export function * group_by_exp<T extends object> (this: FilterImpl, arr: T[], it
 }
 
 function * search<T extends object> (this: FilterImpl, arr: T[], property: string, expected: string): IterableIterator<unknown> {
-  const token = new Tokenizer(stringify(property)).readScopeValue()
+  const token = new Tokenizer(stringify(property), this.liquid).readScopeValue()
   const array = toArray(arr)
   const matcher = expectedMatcher.call(this, expected)
   for (let index = 0; index < array.length; index++) {

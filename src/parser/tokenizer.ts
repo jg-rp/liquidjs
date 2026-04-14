@@ -1,10 +1,12 @@
 import { FilteredValueToken, TagToken, HTMLToken, HashToken, QuotedToken, LiquidTagToken, OutputToken, ValueToken, Token, RangeToken, FilterToken, TopLevelToken, PropertyAccessToken, OperatorToken, LiteralToken, IdentifierToken, NumberToken } from '../tokens'
 import { OperatorHandler } from '../render/operator'
-import { TrieNode, LiteralValue, Trie, createTrie, ellipsis, literalValues, TokenizationError, TYPES, QUOTE, BLANK, NUMBER, SIGN, isWord, isString } from '../util'
+import { TrieNode, LiteralValue, Trie, createTrie, ellipsis, literalValues, TokenizationError, TYPES, QUOTE, BLANK, NUMBER, SIGN, isWord, isString, toIterableIterator } from '../util'
 import { Operators, Expression } from '../render'
 import { NormalizedFullOptions, defaultOptions } from '../liquid-options'
 import { FilterArg } from './filter-arg'
 import { whiteSpaceCtrl } from './whitespace-ctrl'
+import { Liquid } from '../liquid'
+import { PropToken } from '../tokens/prop-token'
 
 export class Tokenizer {
   p: number
@@ -15,6 +17,7 @@ export class Tokenizer {
 
   constructor (
     public input: string,
+    public liquid: Liquid,
     operators: Operators = defaultOptions.operators,
     public file?: string,
     range?: [number, number]
@@ -67,7 +70,7 @@ export class Tokenizer {
     const initial = this.readExpression()
     this.assert(initial.valid(), `invalid value expression: ${this.snapshot()}`)
     const filters = this.readFilters()
-    return new FilteredValueToken(initial, filters, this.input, begin, this.p, this.file)
+    return new FilteredValueToken(initial, filters, this.liquid, this.input, begin, this.p, this.file)
   }
   readFilters (): FilterToken[] {
     const filters = []
@@ -79,7 +82,7 @@ export class Tokenizer {
   }
   readFilter (): FilterToken | null {
     this.skipBlank()
-    if (this.end()) return null
+    if (this.end() || this.peek() === ')') return null
     this.assert(this.read() === '|', `expected "|" before filter`)
     const name = this.readIdentifier()
     if (!name.size()) {
@@ -94,9 +97,9 @@ export class Tokenizer {
         const arg = this.readFilterArg()
         arg && args.push(arg)
         this.skipBlank()
-        this.assert(this.end() || this.peek() === ',' || this.peek() === '|', () => `unexpected character ${this.snapshot()}`)
+        this.assert(this.end() || this.peek() === ')' || this.peek() === ',' || this.peek() === '|', () => `unexpected character ${this.snapshot()}`)
       } while (this.peek() === ',')
-    } else if (this.peek() === '|' || this.end()) {
+    } else if (this.peek() === '|' || this.peek() === ')' || this.end()) {
       // do nothing
     } else {
       throw this.error('expected ":" after filter name')
@@ -147,7 +150,7 @@ export class Tokenizer {
     if (this.readToDelimiter(options.tagDelimiterRight) === -1) {
       throw this.error(`tag ${this.snapshot(begin)} not closed`, begin)
     }
-    const token = new TagToken(input, begin, this.p, options, file)
+    const token = new TagToken(input, begin, this.p, options, this.liquid, file)
     if (token.name === 'raw') this.rawBeginAt = begin
     return token
   }
@@ -189,7 +192,7 @@ export class Tokenizer {
           const end = this.p
           if (begin === leftPos) {
             this.rawBeginAt = -1
-            return new TagToken(this.input, begin, end, options, this.file)
+            return new TagToken(this.input, begin, end, options, this.liquid, this.file)
           } else {
             this.p = leftPos
             return new HTMLToken(this.input, begin, leftPos, this.file)
@@ -218,7 +221,7 @@ export class Tokenizer {
     const begin = this.p
     this.readToDelimiter('\n')
     const end = this.p
-    return new LiquidTagToken(this.input, begin, end, options, this.file)
+    return new LiquidTagToken(this.input, begin, end, options, this.liquid, this.file)
   }
 
   error (msg: string, pos: number = this.p) {
@@ -310,7 +313,7 @@ export class Tokenizer {
   readValue (): ValueToken | undefined {
     this.skipBlank()
     const begin = this.p
-    const variable = this.readLiteral() || this.readQuoted() || this.readRange() || this.readNumber()
+    const variable = this.readLiteral() || this.readQuoted() || this.readGroupOrRange() || this.readNumber()
     const props = this.readProperties(!variable)
     if (!props.length) return variable
     return new PropertyAccessToken(variable, props, this.input, begin, this.p)
@@ -324,12 +327,12 @@ export class Tokenizer {
     return new PropertyAccessToken(undefined, props, this.input, begin, this.p)
   }
 
-  private readProperties (isBegin = true): (ValueToken | IdentifierToken)[] {
-    const props: (ValueToken | IdentifierToken)[] = []
+  private readProperties (isBegin = true): PropToken[] {
+    const props: PropToken[] = []
     while (true) {
       if (this.peek() === '[') {
         this.p++
-        const prop = this.readValue() || new IdentifierToken(this.input, this.p, this.p, this.file)
+        const prop = this.readProperty() || new IdentifierToken(this.input, this.p, this.p, this.file)
         this.assert(this.readTo(']') !== -1, '[ not closed')
         props.push(prop)
         continue
@@ -351,6 +354,15 @@ export class Tokenizer {
       break
     }
     return props
+  }
+
+  private readProperty (): PropToken | undefined {
+    this.skipBlank()
+    const begin = this.p
+    const variable = this.readLiteral() || this.readQuoted() || this.readNumber()
+    const props = this.readProperties(!variable)
+    if (!props.length) return variable
+    return new PropertyAccessToken(variable, props, this.input, begin, this.p)
   }
 
   readNumber (): NumberToken | undefined {
@@ -385,18 +397,33 @@ export class Tokenizer {
     return literal
   }
 
-  readRange (): RangeToken | undefined {
+  readGroupOrRange (): RangeToken | FilteredValueToken | undefined {
     this.skipBlank()
     const begin = this.p
     if (this.peek() !== '(') return
     ++this.p
     const lhs = this.readValueOrThrow()
     this.skipBlank()
-    this.assert(this.read() === '.' && this.read() === '.', 'invalid range syntax')
-    const rhs = this.readValueOrThrow()
-    this.skipBlank()
-    this.assert(this.read() === ')', 'invalid range syntax')
-    return new RangeToken(this.input, begin, this.p, lhs, rhs, this.file)
+
+    if (this.peek() === '.' && this.peek(1) === '.') {
+      this.p += 2
+      const rhs = this.readValueOrThrow()
+      this.skipBlank()
+      this.assert(this.read() === ')', 'invalid range syntax')
+      return new RangeToken(this.input, begin, this.p, lhs, rhs, this.file)
+    }
+
+    if (this.liquid.options.groupedExpressions) {
+      const expression = new Expression(toIterableIterator(lhs))
+      this.skipBlank()
+      const filters = this.readFilters()
+      this.skipBlank()
+      this.assert(this.read() === ')', 'unbalanced parentheses')
+      this.skipBlank()
+      return new FilteredValueToken(expression, filters, this.liquid, this.input, begin, this.p, this.file)
+    }
+
+    throw this.error('invalid range syntax')
   }
 
   readValueOrThrow (): ValueToken {

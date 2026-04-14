@@ -66,6 +66,10 @@ export function toNumber (value: any): number {
   return +toValue(value) || 0
 }
 
+export function * toIterableIterator<T> (item: T): IterableIterator<T> {
+  yield item
+}
+
 export function isNumber (value: any): value is number {
   return typeof value === 'number'
 }

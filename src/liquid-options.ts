@@ -90,6 +90,8 @@ export interface LiquidOptions {
   renderLimit?: number;
   /** For DoS handling, limit new objects creation, including array concat/join/strftime, etc. A typical PC can handle 1e9 (1G) memory without issue. */
   memoryLimit?: number;
+  /** Allow parenthesized expressions as operands in conditions and loops, e.g. `{% if (foo | upcase) == "BAR" %}`. This is a non-standard extension to Liquid. Defaults to `false`. */
+  groupedExpressions?: boolean;
 }
 
 export interface RenderOptions {
@@ -162,6 +164,7 @@ export interface NormalizedFullOptions extends NormalizedOptions {
   parseLimit: number;
   renderLimit: number;
   memoryLimit: number;
+  groupedExpressions: boolean;
 }
 
 export const defaultOptions: NormalizedFullOptions = {
@@ -197,7 +200,8 @@ export const defaultOptions: NormalizedFullOptions = {
   operators: defaultOperators,
   memoryLimit: Infinity,
   parseLimit: Infinity,
-  renderLimit: Infinity
+  renderLimit: Infinity,
+  groupedExpressions: false
 }
 
 export function normalize (options: LiquidOptions): NormalizedFullOptions {

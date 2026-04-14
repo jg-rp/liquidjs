@@ -4,10 +4,12 @@ import { QuotedToken } from '../tokens'
 import { Context } from '../context'
 import { toPromise, toValueSync } from '../util'
 import { evalQuotedToken } from './expression'
+import { Liquid } from '../liquid'
 
 describe('Expression', function () {
+  const liquid = new Liquid()
   const ctx = new Context({})
-  const create = (str: string) => new Tokenizer(str).readExpression()
+  const create = (str: string) => new Tokenizer(str, liquid).readExpression()
 
   it('should throw when context not defined', done => {
     toPromise(create('foo').evaluate(undefined!, false))

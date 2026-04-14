@@ -277,7 +277,7 @@ describe('Issues', function () {
     expect(() => engine.parse('{% assign headshot = https://testurl.com/not_enclosed_in_quotes.jpg %}')).toThrow(/expected "|" before filter, line:1, col:27/)
   })
   it('export Liquid Expression #527', () => {
-    const tokenizer = new Tokenizer('a > b')
+    const tokenizer = new Tokenizer('a > b', new Liquid())
     const expression = tokenizer.readExpression()
     const result = toValueSync(expression.evaluate(new Context({ a: 1, b: 2 })))
     expect(result).toBe(false)

@@ -1,6 +1,7 @@
 import { DelimitedToken } from './delimited-token'
 import { NormalizedFullOptions } from '../liquid-options'
 import { Tokenizer, TokenKind } from '../parser'
+import { Liquid } from '../liquid'
 
 /**
  * LiquidTagToken is different from TagToken by not having delimiters `{%` or `%}`
@@ -13,10 +14,11 @@ export class LiquidTagToken extends DelimitedToken {
     begin: number,
     end: number,
     options: NormalizedFullOptions,
+    liquid: Liquid,
     file?: string
   ) {
     super(TokenKind.Tag, [begin, end], input, begin, end, false, false, file)
-    this.tokenizer = new Tokenizer(input, options.operators, file, this.contentRange)
+    this.tokenizer = new Tokenizer(input, liquid, options.operators, file, this.contentRange)
     this.name = this.tokenizer.readTagName()
     this.tokenizer.assert(this.name, 'illegal liquid tag syntax')
     this.tokenizer.skipBlank()

@@ -1,42 +1,45 @@
-import { LiquidTagToken, HTMLToken, QuotedToken, OutputToken, TagToken, OperatorToken, RangeToken, PropertyAccessToken, NumberToken, IdentifierToken } from '../tokens'
+import { LiquidTagToken, HTMLToken, QuotedToken, OutputToken, TagToken, OperatorToken, RangeToken, PropertyAccessToken, NumberToken, IdentifierToken, FilteredValueToken } from '../tokens'
 import { Tokenizer } from './tokenizer'
 import { defaultOperators } from '../render/operator'
 import { createTrie } from '../util/operator-trie'
+import { Liquid } from '../liquid'
+import { TokenizationError } from '../util'
 
 describe('Tokenizer', function () {
+  const liquid = new Liquid()
   it('should read quoted', () => {
-    expect(new Tokenizer('"foo" ff').readQuoted()!.getText()).toBe('"foo"')
-    expect(new Tokenizer(' "foo"ff').readQuoted()!.getText()).toBe('"foo"')
+    expect(new Tokenizer('"foo" ff', liquid).readQuoted()!.getText()).toBe('"foo"')
+    expect(new Tokenizer(' "foo"ff', liquid).readQuoted()!.getText()).toBe('"foo"')
   })
   it('should read value', () => {
-    expect(new Tokenizer('a[ b][ "c d" ]').readValueOrThrow().getText()).toBe('a[ b][ "c d" ]')
-    expect(new Tokenizer('a.b[c[d.e]]').readValueOrThrow().getText()).toBe('a.b[c[d.e]]')
+    expect(new Tokenizer('a[ b][ "c d" ]', liquid).readValueOrThrow().getText()).toBe('a[ b][ "c d" ]')
+    expect(new Tokenizer('a.b[c[d.e]]', liquid).readValueOrThrow().getText()).toBe('a.b[c[d.e]]')
   })
   it('should read identifier', () => {
-    expect(new Tokenizer('foo bar').readIdentifier()).toHaveProperty('content', 'foo')
+    expect(new Tokenizer('foo bar', liquid).readIdentifier()).toHaveProperty('content', 'foo')
     // eslint-disable-next-line deprecation/deprecation
-    expect(new Tokenizer('foo bar').readWord()).toHaveProperty('content', 'foo')
+    expect(new Tokenizer('foo bar', liquid).readWord()).toHaveProperty('content', 'foo')
   })
   it('should read integer number', () => {
-    const token: NumberToken = new Tokenizer('123').readValueOrThrow() as any
+    const token: NumberToken = new Tokenizer('123', liquid).readValueOrThrow() as any
     expect(token).toBeInstanceOf(NumberToken)
     expect(token.getText()).toBe('123')
     expect(token.content).toBe(123)
   })
   it('should read negative number', () => {
-    const token: NumberToken = new Tokenizer('-123').readValueOrThrow() as any
+    const token: NumberToken = new Tokenizer('-123', liquid).readValueOrThrow() as any
     expect(token).toBeInstanceOf(NumberToken)
     expect(token.getText()).toBe('-123')
     expect(token.content).toBe(-123)
   })
   it('should read float number', () => {
-    const token: NumberToken = new Tokenizer('1.23').readValueOrThrow() as any
+    const token: NumberToken = new Tokenizer('1.23', liquid).readValueOrThrow() as any
     expect(token).toBeInstanceOf(NumberToken)
     expect(token.getText()).toBe('1.23')
     expect(token.content).toBe(1.23)
   })
   it('should treat 1.2.3 as property read', () => {
-    const token: PropertyAccessToken = new Tokenizer('1.2.3').readValueOrThrow() as any
+    const token: PropertyAccessToken = new Tokenizer('1.2.3', liquid).readValueOrThrow() as any
     expect(token).toBeInstanceOf(PropertyAccessToken)
     expect(token.props).toHaveLength(3)
     expect(token.props[0].getText()).toBe('1')
@@ -44,33 +47,33 @@ describe('Tokenizer', function () {
     expect(token.props[2].getText()).toBe('3')
   })
   it('should read quoted value', () => {
-    const value = new Tokenizer('"foo"a').readValue()
+    const value = new Tokenizer('"foo"a', liquid).readValue()
     expect(value).toBeInstanceOf(QuotedToken)
     expect(value!.getText()).toBe('"foo"')
   })
   it('should read property access value', () => {
-    expect(new Tokenizer('a[b]["c d"]').readValueOrThrow().getText()).toBe('a[b]["c d"]')
+    expect(new Tokenizer('a[b]["c d"]', liquid).readValueOrThrow().getText()).toBe('a[b]["c d"]')
   })
   it('should read quoted property access value', () => {
-    const value = new Tokenizer('["a prop"]').readValue()
+    const value = new Tokenizer('["a prop"]', liquid).readValue()
     expect(value).toBeInstanceOf(PropertyAccessToken)
     expect((value as QuotedToken).getText()).toBe('["a prop"]')
   })
   it('should throw for incomplete quoted property access', () => {
-    const tokenizer = new Tokenizer('["a prop"')
+    const tokenizer = new Tokenizer('["a prop"', liquid)
     expect(() => tokenizer.readValueOrThrow()).toThrow()
   })
   it('should read hash', () => {
-    const hash1 = new Tokenizer('foo: 3').readHash()
+    const hash1 = new Tokenizer('foo: 3', liquid).readHash()
     expect(hash1!.name.content).toBe('foo')
     expect(hash1!.value!.getText()).toBe('3')
 
-    const hash2 = new Tokenizer(', foo: a[ "bar"]').readHash()
+    const hash2 = new Tokenizer(', foo: a[ "bar"]', liquid).readHash()
     expect(hash2!.name.content).toBe('foo')
     expect(hash2!.value!.getText()).toBe('a[ "bar"]')
   })
   it('should read multiple hashes', () => {
-    const hashes = new Tokenizer(', limit: 3 reverse offset:off').readHashes()
+    const hashes = new Tokenizer(', limit: 3 reverse offset:off', liquid).readHashes()
     expect(hashes).toHaveLength(3)
     const [limit, reverse, offset] = hashes
     expect(limit.name.content).toBe('limit')
@@ -83,7 +86,7 @@ describe('Tokenizer', function () {
     expect(offset.value!.getText()).toBe('off')
   })
   it('should read hash value with property access', () => {
-    const hashes = new Tokenizer('cols: 2, rows: data["rows"]').readHashes()
+    const hashes = new Tokenizer('cols: 2, rows: data["rows"]', liquid).readHashes()
     expect(hashes).toHaveLength(2)
     const [cols, rols] = hashes
 
@@ -96,7 +99,7 @@ describe('Tokenizer', function () {
   describe('#readTopLevelTokens()', () => {
     it('should read HTML token', function () {
       const html = '<html><body><p>Lorem Ipsum</p></body></html>'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(1)
@@ -105,7 +108,7 @@ describe('Tokenizer', function () {
     })
     it('should read tag token', function () {
       const html = '<p>{% for p in a[1]%}</p>'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(3)
@@ -116,7 +119,7 @@ describe('Tokenizer', function () {
     })
     it('should allow unclosed tag inside {% raw %}', function () {
       const html = '{%raw%} {%if%} {%else {%endraw%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(3)
@@ -125,7 +128,7 @@ describe('Tokenizer', function () {
     })
     it('should allow unclosed endraw tag inside {% raw %}', function () {
       const html = '{%raw%} {%endraw {%raw%} {%endraw%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(3)
@@ -134,12 +137,12 @@ describe('Tokenizer', function () {
     })
     it('should throw when {% raw %} not closed', function () {
       const html = '{%raw%} {%endraw {%raw%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       expect(() => tokenizer.readTopLevelTokens()).toThrow('raw "{%raw%} {%endraw {%raw%}" not closed, line:1, col:8')
     })
     it('should read output token', function () {
       const html = '<p>{{foo | date: "%Y-%m-%d"}}</p>'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(3)
@@ -149,7 +152,7 @@ describe('Tokenizer', function () {
     })
     it('should handle consecutive value and tags', function () {
       const html = '{{foo}}{{bar}}{%foo%}{%bar%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
 
       expect(tokens.length).toBe(4)
@@ -171,7 +174,7 @@ describe('Tokenizer', function () {
     })
     it('should keep white spaces and newlines', function () {
       const html = '{%foo%}\n{%bar %}  \n {%alice%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(5)
       expect(tokens[1]).toBeInstanceOf(HTMLToken)
@@ -181,7 +184,7 @@ describe('Tokenizer', function () {
     })
     it('should handle multiple lines tag', function () {
       const html = '{%foo\na:a\nb:1.23\n%}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       expect(tokens[0]).toBeInstanceOf(TagToken)
@@ -190,7 +193,7 @@ describe('Tokenizer', function () {
     })
     it('should handle multiple lines value', function () {
       const html = '{{foo\n|date:\n"%Y-%m-%d"\n}}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       expect(tokens[0]).toBeInstanceOf(OutputToken)
@@ -198,7 +201,7 @@ describe('Tokenizer', function () {
     })
     it('should handle complex object property access', function () {
       const html = '{{ obj["my:property with anything"] }}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       const output = tokens[0] as OutputToken
@@ -207,11 +210,11 @@ describe('Tokenizer', function () {
     })
     it('should throw if tag not closed', function () {
       const html = '{% assign foo = bar {{foo}}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       expect(() => tokenizer.readTopLevelTokens()).toThrow('tag "{% assign foo = bar {{foo}}" not closed, line:1, col:1')
     })
     it('should throw if output not closed', function () {
-      const tokenizer = new Tokenizer('{{name}')
+      const tokenizer = new Tokenizer('{{name}', liquid)
       expect(() => tokenizer.readTopLevelTokens()).toThrow(/output "{{name}" not closed/)
     })
   })
@@ -220,7 +223,7 @@ describe('Tokenizer', function () {
   describe('#readOutputToken()', () => {
     it('should skip quoted delimiters', function () {
       const html = '{{ "%} {%" | append: "}} {{" }}'
-      const tokenizer = new Tokenizer(html)
+      const tokenizer = new Tokenizer(html, liquid)
       const token = tokenizer.readOutputToken()
 
       expect(token).toBeInstanceOf(OutputToken)
@@ -229,7 +232,7 @@ describe('Tokenizer', function () {
   })
   describe('#readRange()', () => {
     it('should read `(1..3)`', () => {
-      const range = new Tokenizer('(1..3)').readRange()
+      const range = new Tokenizer('(1..3)', liquid).readGroupOrRange() as RangeToken
       expect(range).toBeInstanceOf(RangeToken)
       expect(range!.getText()).toEqual('(1..3)')
       const { lhs, rhs } = range!
@@ -239,23 +242,23 @@ describe('Tokenizer', function () {
       expect(rhs.getText()).toBe('3')
     })
     it('should throw for `(..3)`', () => {
-      expect(() => new Tokenizer('(..3)').readRange()).toThrow('unexpected token "..3)", value expected')
+      expect(() => new Tokenizer('(..3)', liquid).readGroupOrRange()).toThrow('unexpected token "..3)", value expected')
     })
     it('should read `(a.b..c["..d"])`', () => {
-      const range = new Tokenizer('(a.b..c["..d"])').readRange()
+      const range = new Tokenizer('(a.b..c["..d"])', liquid).readGroupOrRange()
       expect(range).toBeInstanceOf(RangeToken)
       expect(range!.getText()).toEqual('(a.b..c["..d"])')
     })
   })
   describe('#readFilter()', () => {
     it('should read a simple filter', function () {
-      const tokenizer = new Tokenizer('| plus')
+      const tokenizer = new Tokenizer('| plus', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token).toHaveProperty('args', [])
     })
     it('should read a filter with argument', function () {
-      const tokenizer = new Tokenizer(' | plus: 1')
+      const tokenizer = new Tokenizer(' | plus: 1', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token!.args).toHaveLength(1)
@@ -265,18 +268,18 @@ describe('Tokenizer', function () {
       expect(one.getText()).toBe('1')
     })
     it('should read a filter with colon but no argument', function () {
-      const tokenizer = new Tokenizer('| plus:')
+      const tokenizer = new Tokenizer('| plus:', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token).toHaveProperty('args', [])
     })
     it('should read null if name not found', function () {
-      const tokenizer = new Tokenizer('|')
+      const tokenizer = new Tokenizer('|', liquid)
       const token = tokenizer.readFilter()
       expect(token).toBeNull()
     })
     it('should read a filter with k/v argument', function () {
-      const tokenizer = new Tokenizer(' | plus: a:1')
+      const tokenizer = new Tokenizer(' | plus: a:1', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token!.args).toHaveLength(1)
@@ -287,7 +290,7 @@ describe('Tokenizer', function () {
       expect(v.getText()).toBe('1')
     })
     it('should read a filter with "arr[0]" argument', function () {
-      const tokenizer = new Tokenizer('| plus: arr[0]')
+      const tokenizer = new Tokenizer('| plus: arr[0]', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token!.args).toHaveLength(1)
@@ -300,7 +303,7 @@ describe('Tokenizer', function () {
       expect(pa.props[1].getText()).toBe('0')
     })
     it('should read a filter with obj.foo argument', function () {
-      const tokenizer = new Tokenizer('| plus: obj.foo')
+      const tokenizer = new Tokenizer('| plus: obj.foo', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token!.args).toHaveLength(1)
@@ -313,7 +316,7 @@ describe('Tokenizer', function () {
       expect(pa.props[1].getText()).toBe('foo')
     })
     it('should read a filter with obj["foo"] argument', function () {
-      const tokenizer = new Tokenizer('| plus: obj["good luck"]')
+      const tokenizer = new Tokenizer('| plus: obj["good luck"]', liquid)
       const token = tokenizer.readFilter()
       expect(token).toHaveProperty('name', 'plus')
       expect(token!.args).toHaveLength(1)
@@ -327,7 +330,7 @@ describe('Tokenizer', function () {
   })
   describe('#readFilters()', () => {
     it('should read simple filters', function () {
-      const tokenizer = new Tokenizer('| plus: 3 | capitalize')
+      const tokenizer = new Tokenizer('| plus: 3 | capitalize', liquid)
       const tokens = tokenizer.readFilters()
 
       expect(tokens).toHaveLength(2)
@@ -340,7 +343,7 @@ describe('Tokenizer', function () {
       expect(tokens[1].args).toHaveLength(0)
     })
     it('should read filters', function () {
-      const tokenizer = new Tokenizer('| plus: a:3 | capitalize | append: foo[a.b["c d"]]')
+      const tokenizer = new Tokenizer('| plus: a:3 | capitalize | append: foo[a.b["c d"]]', liquid)
       const tokens = tokenizer.readFilters()
 
       expect(tokens).toHaveLength(3)
@@ -363,14 +366,14 @@ describe('Tokenizer', function () {
   })
   describe('#readExpression()', () => {
     it('should read expression `a `', () => {
-      const exp = [...new Tokenizer('a ').readExpressionTokens()]
+      const exp = [...new Tokenizer('a ', liquid).readExpressionTokens()]
 
       expect(exp).toHaveLength(1)
       expect(exp[0]).toBeInstanceOf(PropertyAccessToken)
       expect(exp[0].getText()).toEqual('a')
     })
     it('should read expression `a[][b]`', () => {
-      const exp = [...new Tokenizer('a[][b]').readExpressionTokens()]
+      const exp = [...new Tokenizer('a[][b]', liquid).readExpressionTokens()]
 
       expect(exp).toHaveLength(1)
       const pa = exp[0] as PropertyAccessToken
@@ -385,7 +388,7 @@ describe('Tokenizer', function () {
       expect(p2.getText()).toBe('b')
     })
     it('should read expression `a.`', () => {
-      const exp = [...new Tokenizer('a.').readExpressionTokens()]
+      const exp = [...new Tokenizer('a.', liquid).readExpressionTokens()]
 
       expect(exp).toHaveLength(1)
       const pa = exp[0] as PropertyAccessToken
@@ -394,7 +397,7 @@ describe('Tokenizer', function () {
       expect((pa.props[0] as any).content).toEqual('a')
     })
     it('should read expression `a ==`', () => {
-      const exp = [...new Tokenizer('a ==').readExpressionTokens()]
+      const exp = [...new Tokenizer('a ==', liquid).readExpressionTokens()]
 
       expect(exp).toHaveLength(2)
       expect(exp[0]).toBeInstanceOf(PropertyAccessToken)
@@ -403,7 +406,7 @@ describe('Tokenizer', function () {
       expect(exp[1].getText()).toEqual('==')
     })
     it('should read expression `a==b`', () => {
-      const exp = new Tokenizer('a==b').readExpressionTokens()
+      const exp = new Tokenizer('a==b', liquid).readExpressionTokens()
       const [a, equals, b] = exp
 
       expect(a).toBeInstanceOf(PropertyAccessToken)
@@ -416,11 +419,11 @@ describe('Tokenizer', function () {
       expect(b.getText()).toEqual('b')
     })
     it('should read expression `^`', () => {
-      const exp = new Tokenizer('^').readExpressionTokens()
+      const exp = new Tokenizer('^', liquid).readExpressionTokens()
       expect([...exp]).toEqual([])
     })
     it('should read expression `a == b`', () => {
-      const exp = new Tokenizer('a == b').readExpressionTokens()
+      const exp = new Tokenizer('a == b', liquid).readExpressionTokens()
       const [a, equals, b] = exp
 
       expect(a).toBeInstanceOf(PropertyAccessToken)
@@ -433,7 +436,7 @@ describe('Tokenizer', function () {
       expect(b.getText()).toEqual('b')
     })
     it('should read expression `(1..3) contains 3`', () => {
-      const exp = new Tokenizer('(1..3) contains 3').readExpressionTokens()
+      const exp = new Tokenizer('(1..3) contains 3', liquid).readExpressionTokens()
       const [range, contains, rhs] = exp
 
       expect(range).toBeInstanceOf(RangeToken)
@@ -446,7 +449,7 @@ describe('Tokenizer', function () {
       expect(rhs.getText()).toEqual('3')
     })
     it('should read expression `a[b] == c`', () => {
-      const exp = new Tokenizer('a[b] == c').readExpressionTokens()
+      const exp = new Tokenizer('a[b] == c', liquid).readExpressionTokens()
       const [lhs, contains, rhs] = exp
 
       expect(lhs).toBeInstanceOf(PropertyAccessToken)
@@ -459,7 +462,7 @@ describe('Tokenizer', function () {
       expect(rhs.getText()).toEqual('c')
     })
     it('should read expression `c[a["b"]] >= c`', () => {
-      const exp = new Tokenizer('c[a["b"]] >= c').readExpressionTokens()
+      const exp = new Tokenizer('c[a["b"]] >= c', liquid).readExpressionTokens()
       const [lhs, op, rhs] = exp
 
       expect(lhs).toBeInstanceOf(PropertyAccessToken)
@@ -472,7 +475,7 @@ describe('Tokenizer', function () {
       expect(rhs.getText()).toEqual('c')
     })
     it('should read expression `"][" == var`', () => {
-      const exp = new Tokenizer('"][" == var').readExpressionTokens()
+      const exp = new Tokenizer('"][" == var', liquid).readExpressionTokens()
       const [lhs, equals, rhs] = exp
 
       expect(lhs).toBeInstanceOf(QuotedToken)
@@ -485,7 +488,7 @@ describe('Tokenizer', function () {
       expect(rhs.getText()).toEqual('var')
     })
     it('should read expression `"\\\'" == "\\""`', () => {
-      const exp = new Tokenizer('"\\\'" == "\\""').readExpressionTokens()
+      const exp = new Tokenizer('"\\\'" == "\\""', liquid).readExpressionTokens()
       const [lhs, equals, rhs] = exp
 
       expect(lhs).toBeInstanceOf(QuotedToken)
@@ -501,30 +504,30 @@ describe('Tokenizer', function () {
   describe('#matchTrie()', function () {
     const opTrie = createTrie(defaultOperators)
     it('should match contains', () => {
-      expect(new Tokenizer('contains').matchTrie(opTrie)).toBe(8)
+      expect(new Tokenizer('contains', liquid).matchTrie(opTrie)).toBe(8)
     })
     it('should match comparison', () => {
-      expect(new Tokenizer('>').matchTrie(opTrie)).toBe(1)
-      expect(new Tokenizer('>=').matchTrie(opTrie)).toBe(2)
-      expect(new Tokenizer('<').matchTrie(opTrie)).toBe(1)
-      expect(new Tokenizer('<=').matchTrie(opTrie)).toBe(2)
+      expect(new Tokenizer('>', liquid).matchTrie(opTrie)).toBe(1)
+      expect(new Tokenizer('>=', liquid).matchTrie(opTrie)).toBe(2)
+      expect(new Tokenizer('<', liquid).matchTrie(opTrie)).toBe(1)
+      expect(new Tokenizer('<=', liquid).matchTrie(opTrie)).toBe(2)
     })
     it('should match binary logic', () => {
-      expect(new Tokenizer('and').matchTrie(opTrie)).toBe(3)
-      expect(new Tokenizer('or').matchTrie(opTrie)).toBe(2)
+      expect(new Tokenizer('and', liquid).matchTrie(opTrie)).toBe(3)
+      expect(new Tokenizer('or', liquid).matchTrie(opTrie)).toBe(2)
     })
     it('should not match if word not terminate', () => {
-      expect(new Tokenizer('true1').matchTrie(opTrie)).toBe(-1)
-      expect(new Tokenizer('containsa').matchTrie(opTrie)).toBe(-1)
+      expect(new Tokenizer('true1', liquid).matchTrie(opTrie)).toBe(-1)
+      expect(new Tokenizer('containsa', liquid).matchTrie(opTrie)).toBe(-1)
     })
     it('should match if word boundary found', () => {
-      expect(new Tokenizer('>=1').matchTrie(opTrie)).toBe(2)
-      expect(new Tokenizer('contains b').matchTrie(opTrie)).toBe(8)
+      expect(new Tokenizer('>=1', liquid).matchTrie(opTrie)).toBe(2)
+      expect(new Tokenizer('contains b', liquid).matchTrie(opTrie)).toBe(8)
     })
   })
   describe('#readLiquidTagTokens', () => {
     it('should read newline terminated tokens', () => {
-      const tokenizer = new Tokenizer('echo \'hello\'')
+      const tokenizer = new Tokenizer('echo \'hello\'', liquid)
       const tokens = tokenizer.readLiquidTagTokens()
       expect(tokens.length).toBe(1)
       const tag = tokens[0]
@@ -537,18 +540,18 @@ describe('Tokenizer', function () {
         echo 'hello'
 
         decrement foo
-        `)
+        `, liquid)
       const tokens = tokenizer.readLiquidTagTokens()
       expect(tokens.length).toBe(2)
     })
     it('should throw if line does not start with an identifier', () => {
-      const tokenizer = new Tokenizer('!')
+      const tokenizer = new Tokenizer('!', liquid)
       expect(() => tokenizer.readLiquidTagTokens()).toThrow(/illegal liquid tag syntax/)
     })
   })
   describe('#read inline comment tags', () => {
     it('should allow hash characters in tag names', () => {
-      const tokenizer = new Tokenizer('{% # some comment %}')
+      const tokenizer = new Tokenizer('{% # some comment %}', liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       const tag = tokens[0] as TagToken
@@ -557,7 +560,7 @@ describe('Tokenizer', function () {
       expect(tag.args).toBe('some comment')
     })
     it('should handle leading whitespace', () => {
-      const tokenizer = new Tokenizer('{%\n  # some comment %}')
+      const tokenizer = new Tokenizer('{%\n  # some comment %}', liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       const tag = tokens[0] as TagToken
@@ -566,13 +569,64 @@ describe('Tokenizer', function () {
       expect(tag.args).toBe('some comment')
     })
     it('should handle no trailing whitespace', () => {
-      const tokenizer = new Tokenizer('{%\n  #some comment %}')
+      const tokenizer = new Tokenizer('{%\n  #some comment %}', liquid)
       const tokens = tokenizer.readTopLevelTokens()
       expect(tokens.length).toBe(1)
       const tag = tokens[0] as TagToken
       expect(tag).toBeInstanceOf(TagToken)
       expect(tag.name).toBe('#')
       expect(tag.args).toBe('some comment')
+    })
+  })
+
+  describe('#readGroupedExpression()', () => {
+    function createGrouped (input: string): Tokenizer {
+      const liquid = new Liquid({ groupedExpressions: true })
+      return new Tokenizer(input, liquid, defaultOperators)
+    }
+    it('should read `(foo | upcase)` as FilteredValueToken', () => {
+      const token = createGrouped('(foo | upcase)').readValue()
+      expect(token).toBeInstanceOf(FilteredValueToken)
+      const grouped = token as FilteredValueToken
+      expect(grouped.getText()).toBe('(foo | upcase)')
+      expect(grouped.initial.postfix).toHaveLength(1)
+      expect(grouped.filters).toHaveLength(1)
+      expect(grouped.filters[0].name).toBe('upcase')
+    })
+    it('should read `(foo | append: "!")` with filter argument', () => {
+      const token = createGrouped('(foo | append: "!")').readValue()
+      expect(token).toBeInstanceOf(FilteredValueToken)
+      const grouped = token as FilteredValueToken
+      expect(grouped.filters).toHaveLength(1)
+      expect(grouped.filters[0].name).toBe('append')
+      expect(grouped.filters[0].args).toHaveLength(1)
+    })
+    it('should read nested `((foo | append: "!") | upcase)`', () => {
+      const token = createGrouped('((foo | append: "!") | upcase)').readValue()
+      expect(token).toBeInstanceOf(FilteredValueToken)
+      const grouped = token as FilteredValueToken
+      expect(grouped.filters).toHaveLength(1)
+      expect(grouped.filters[0].name).toBe('upcase')
+      expect(grouped.initial.postfix).toHaveLength(1)
+      expect(grouped.initial.postfix[0]).toBeInstanceOf(FilteredValueToken)
+    })
+    it('should parse `(a | upcase) == "BAR"` as expression', () => {
+      const exp = [...createGrouped('(a | upcase) == "BAR"').readExpressionTokens()]
+      expect(exp).toHaveLength(3)
+      expect(exp[0]).toBeInstanceOf(FilteredValueToken)
+      expect(exp[1]).toBeInstanceOf(OperatorToken)
+      expect(exp[1].getText()).toBe('==')
+      expect(exp[2]).toBeInstanceOf(QuotedToken)
+    })
+    it('should still parse `(1..3)` as RangeToken', () => {
+      const token = createGrouped('(1..3)').readValue()
+      expect(token).toBeInstanceOf(RangeToken)
+    })
+    it('should return undefined for unclosed parens', () => {
+      expect(() => { createGrouped('(foo | upcase').readValue() }).toThrow(TokenizationError)
+    })
+    it('should fall back to readRange when flag is off', () => {
+      expect(() => new Tokenizer('(foo | upcase)', new Liquid({ groupedExpressions: false }), defaultOperators).readValue()).toThrow('invalid range syntax')
     })
   })
 })
